@@ -72,6 +72,7 @@
         "previews",
         "workingFiles",
         "deliverables",
+        "results",
         "otherFiles"
       ],
       "description": "Categories for organizing files within a design project"
@@ -85,6 +86,54 @@
         "pt"
       ],
       "description": "Units of measurement for physical dimensions"
+    },
+    "physicalSubtypeEnum": {
+      "type": "string",
+      "enum": [
+        "postcard",
+        "business-card",
+        "banner",
+        "sign",
+        "conference-booth",
+        "packaging",
+        "booklet",
+        "handout",
+        "poster"
+      ],
+      "description": "Subtypes for physical design categories",
+      "enumDescriptions": {
+        "postcard": "Standard postcard format for mail distribution",
+        "business-card": "Personal contact information card",
+        "banner": "Flexible material for hanging displays and trade shows",
+        "sign": "Rigid material for permanent mounting and identification",
+        "conference-booth": "Large format graphics for trade show displays",
+        "packaging": "Product packaging and container graphics",
+        "booklet": "Multi-page bound document with covers",
+        "handout": "Informational single or multi-page document for distribution",
+        "poster": "Large format display for walls or public spaces"
+      }
+    },
+    "digitalSubtypeEnum": {
+      "type": "string",
+      "enum": [
+        "presentation",
+        "ad",
+        "website",
+        "ebook",
+        "video",
+        "social-media",
+        "email"
+      ],
+      "description": "Subtypes for digital design categories",
+      "enumDescriptions": {
+        "presentation": "Slide-based content for presentations and decks",
+        "ad": "Digital advertising graphics and banners",
+        "website": "Web page layouts and interface designs",
+        "ebook": "Digital book or publication format",
+        "video": "Motion graphics and video content",
+        "social-media": "Graphics optimized for social media platforms",
+        "email": "Email newsletter and campaign designs"
+      }
     },
     "finishEnum": {
       "type": "string",
@@ -156,6 +205,10 @@
         "units": {
           "$ref": "#/$defs/unitsEnum"
         },
+        "subtype": {
+          "$ref": "#/$defs/physicalSubtypeEnum",
+          "description": "Category of physical design"
+        },
         "thickness": {
           "type": "number",
           "exclusiveMinimum": 0,
@@ -189,6 +242,10 @@
           "type": "integer",
           "exclusiveMinimum": 0,
           "description": "Height in pixels"
+        },
+        "subtype": {
+          "$ref": "#/$defs/digitalSubtypeEnum",
+          "description": "Category of digital design"
         },
         "resolution": {
           "type": "number",
