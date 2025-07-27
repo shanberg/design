@@ -9,9 +9,9 @@
       "description": "The version of the design.json schema.",
       "type": "string",
       "enum": [
-        "1.1.0"
+        "1.2.0"
       ],
-      "default": "1.1.0"
+      "default": "1.2.0"
     },
     "designType": {
       "description": "Whether this is a physical or digital design.",
@@ -290,21 +290,120 @@
         "category"
       ]
     },
+    "fileRangeReference": {
+      "type": "object",
+      "description": "A range of sequential files with a common naming pattern",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Unique identifier for this file range, used in layout references"
+        },
+        "basePath": {
+          "type": "string",
+          "pattern": "^(?!.*\\.\\.).*$",
+          "description": "Base path with {sequence} placeholder for sequence number",
+          "minLength": 1
+        },
+        "startNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Starting sequence number (inclusive)"
+        },
+        "endNumber": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Ending sequence number (inclusive)"
+        },
+        "numberFormat": {
+          "type": "string",
+          "enum": [
+            "1",
+            "01",
+            "001",
+            "0001"
+          ],
+          "description": "Format for sequence numbers in filenames",
+          "default": "01"
+        },
+        "fileExtension": {
+          "type": "string",
+          "description": "File extension (e.g., '.pdf', '.jpg')",
+          "pattern": "^\\.[a-zA-Z0-9]+$"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the file range's purpose"
+        },
+        "fileType": {
+          "$ref": "#/$defs/fileTypeEnum"
+        },
+        "category": {
+          "$ref": "#/$defs/fileCategoryEnum"
+        }
+      },
+      "required": [
+        "id",
+        "basePath",
+        "startNumber",
+        "endNumber",
+        "fileExtension",
+        "category"
+      ]
+    },
     "filesCollection": {
       "type": "object",
-      "description": "Collection of all files with unique IDs",
+      "description": "Collection of all files and file ranges with unique IDs",
       "properties": {
         "files": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/fileReference"
           },
-          "minItems": 1,
-          "description": "Array of all files in the project"
+          "description": "Array of individual files in the project"
+        },
+        "fileRanges": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fileRangeReference"
+          },
+          "description": "Array of file ranges for sequential files"
         }
       },
       "required": [
         "files"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "files": {
+                "type": "array"
+              },
+              "fileRanges": {
+                "type": "array"
+              }
+            }
+          },
+          "then": {
+            "anyOf": [
+              {
+                "properties": {
+                  "files": {
+                    "minItems": 1
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "fileRanges": {
+                    "minItems": 1
+                  }
+                }
+              }
+            ]
+          }
+        }
       ]
     },
     "linkReference": {
@@ -353,7 +452,7 @@
     },
     "contentItem": {
       "type": "object",
-      "description": "A content item that references a file by ID and specifies how it's used in the layout",
+      "description": "A content item that references a file or file range by ID and specifies how it's used in the layout",
       "properties": {
         "description": {
           "type": "string",
@@ -363,25 +462,123 @@
           "type": "string",
           "description": "References the ID of a file in the files collection"
         },
-        "side": {
+        "fileRangeId": {
           "type": "string",
-          "enum": [
-            "front",
-            "back"
-          ],
-          "description": "Side of the design (for two-sided layouts)"
-        },
-        "pages": {
-          "type": "array",
-          "items": {
-            "type": "integer"
-          },
-          "minItems": 1,
-          "description": "Page numbers for multipage layouts"
+          "description": "References the ID of a file range in the fileRanges collection"
         }
       },
-      "required": [
-        "fileId"
+      "oneOf": [
+        {
+          "required": [
+            "fileId"
+          ]
+        },
+        {
+          "required": [
+            "fileRangeId"
+          ]
+        }
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "fileId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "fileId"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "fileRangeId"
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "fileRangeId": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "fileRangeId"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "fileId"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "singleSidedContentItem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentItem"
+        },
+        {
+          "not": {
+            "properties": {
+              "side": {
+                "const": "back"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "twoSidedContentItem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentItem"
+        },
+        {
+          "required": [
+            "side"
+          ],
+          "properties": {
+            "side": {
+              "type": "string",
+              "enum": [
+                "front",
+                "back"
+              ],
+              "description": "Side of the design (for two-sided layouts)"
+            }
+          }
+        }
+      ]
+    },
+    "multipageContentItem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentItem"
+        },
+        {
+          "required": [
+            "pages"
+          ],
+          "properties": {
+            "pages": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "minItems": 1,
+              "description": "Page numbers for multipage layouts"
+            }
+          }
+        }
       ]
     },
     "layout": {
@@ -399,9 +596,6 @@
         "content": {
           "type": "array",
           "minItems": 1,
-          "items": {
-            "$ref": "#/$defs/contentItem"
-          },
           "description": "Array of content items that make up the design"
         }
       },
@@ -409,67 +603,45 @@
         "type",
         "content"
       ],
-      "allOf": [
+      "oneOf": [
         {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "single-sided"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "content": {
-                "items": {
-                  "not": {
-                    "properties": {
-                      "side": {
-                        "const": "back"
-                      }
-                    }
-                  }
-                }
+          "properties": {
+            "type": {
+              "const": "single-sided"
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/singleSidedContentItem"
               }
             }
           }
         },
         {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "two-sided"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "content": {
-                "items": {
-                  "required": [
-                    "side"
-                  ]
-                }
+          "properties": {
+            "type": {
+              "const": "two-sided"
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/twoSidedContentItem"
               }
             }
           }
         },
         {
-          "if": {
-            "properties": {
-              "type": {
-                "const": "multipage"
-              }
-            }
-          },
-          "then": {
-            "properties": {
-              "content": {
-                "items": {
-                  "required": [
-                    "pages"
-                  ]
-                }
+          "properties": {
+            "type": {
+              "const": "multipage"
+            },
+            "content": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "$ref": "#/$defs/multipageContentItem"
               }
             }
           }
