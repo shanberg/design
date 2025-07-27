@@ -1,0 +1,424 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/schemas/design.json",
+  "title": "Design Definition",
+  "description": "A schema for defining designs.",
+  "type": "object",
+  "properties": {
+    "schemaVersion": {
+      "description": "The version of the design.json schema.",
+      "type": "string",
+      "enum": [
+        "1.0"
+      ],
+      "default": "1.0"
+    },
+    "designType": {
+      "description": "Whether this is a physical or digital design.",
+      "$ref": "#/$defs/designTypeEnum"
+    },
+    "designInfo": {
+      "$ref": "#/$defs/designInfo"
+    },
+    "specifications": {
+      "$ref": "#/$defs/specifications"
+    },
+    "files": {
+      "description": "All files organized by category with unique IDs",
+      "$ref": "#/$defs/filesCollection"
+    },
+    "links": {
+      "description": "External links related to the design project",
+      "$ref": "#/$defs/linksCollection"
+    },
+    "layout": {
+      "$ref": "#/$defs/layout"
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "designType",
+    "designInfo",
+    "specifications",
+    "files",
+    "layout"
+  ],
+  "$defs": {
+    "designTypeEnum": {
+      "type": "string",
+      "description": "Type of design - physical for print/tangible items, digital for screen-based content",
+      "enum": [
+        "physical",
+        "digital"
+      ]
+    },
+    "fileTypeEnum": {
+      "type": "string",
+      "enum": [
+        "image",
+        "pdf",
+        "vector",
+        "document",
+        "video",
+        "audio",
+        "3d",
+        "archive"
+      ],
+      "description": "Type of file for categorization and processing"
+    },
+    "fileCategoryEnum": {
+      "type": "string",
+      "enum": [
+        "previews",
+        "workingFiles",
+        "deliverables",
+        "otherFiles"
+      ],
+      "description": "Categories for organizing files within a design project"
+    },
+    "unitsEnum": {
+      "type": "string",
+      "enum": [
+        "inch",
+        "mm",
+        "cm",
+        "pt"
+      ],
+      "description": "Units of measurement for physical dimensions"
+    },
+    "finishEnum": {
+      "type": "string",
+      "enum": [
+        "gloss",
+        "semi-gloss",
+        "matte"
+      ],
+      "description": "Surface finish options for physical designs"
+    },
+    "designInfo": {
+      "type": "object",
+      "description": "Administrative metadata for the design.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable title of the design"
+        },
+        "projectName": {
+          "type": "string",
+          "description": "Internal project name or identifier"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version identifier for this design iteration"
+        },
+        "dateCreated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime with timezone (e.g., 2024-01-15T10:30:00Z)"
+        },
+        "dateModified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime with timezone (e.g., 2024-01-15T10:30:00Z)"
+        }
+      },
+      "required": [
+        "title",
+        "dateCreated"
+      ]
+    },
+    "specifications": {
+      "type": "object",
+      "description": "Defines the specifications of the design, either physical dimensions or digital properties.",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/physicalSpecifications"
+        },
+        {
+          "$ref": "#/$defs/digitalSpecifications"
+        }
+      ]
+    },
+    "physicalSpecifications": {
+      "type": "object",
+      "description": "Physical design specifications for print or tangible items.",
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Width in specified units"
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Height in specified units"
+        },
+        "units": {
+          "$ref": "#/$defs/unitsEnum"
+        },
+        "thickness": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Thickness in specified units"
+        },
+        "finish": {
+          "$ref": "#/$defs/finishEnum"
+        },
+        "bleed": {
+          "type": "number",
+          "description": "Bleed value for all sides in the same units as the design",
+          "default": 0
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "units"
+      ]
+    },
+    "digitalSpecifications": {
+      "type": "object",
+      "description": "Digital design specifications for screen-based content.",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Width in pixels"
+        },
+        "height": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Height in pixels"
+        },
+        "resolution": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Resolution in DPI (dots per inch)"
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ]
+    },
+    "fileReference": {
+      "type": "object",
+      "description": "A file with metadata and unique ID",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Unique identifier for this file, used in layout references"
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(?!.*\\.\\.).*$",
+          "description": "Relative path to file, no parent directory traversal allowed",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the file's purpose"
+        },
+        "fileType": {
+          "$ref": "#/$defs/fileTypeEnum"
+        },
+        "category": {
+          "$ref": "#/$defs/fileCategoryEnum"
+        }
+      },
+      "required": [
+        "id",
+        "path",
+        "category"
+      ]
+    },
+    "filesCollection": {
+      "type": "object",
+      "description": "Collection of all files with unique IDs",
+      "properties": {
+        "files": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/fileReference"
+          },
+          "minItems": 1,
+          "description": "Array of all files in the project"
+        }
+      },
+      "required": [
+        "files"
+      ]
+    },
+
+    "linkReference": {
+      "type": "object",
+      "description": "A link with metadata and unique ID",
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$",
+          "description": "Unique identifier for this link"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri",
+          "description": "The full URL of the link"
+        },
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of the link's purpose"
+        },
+        "linkType": {
+          "type": "string",
+          "description": "Optional categorization of the link (e.g., 'jira', 'live', 'documentation')"
+        }
+      },
+      "required": [
+        "id",
+        "url"
+      ]
+    },
+    "linksCollection": {
+      "type": "object",
+      "description": "Collection of all links with unique IDs",
+      "properties": {
+        "links": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/linkReference"
+          },
+          "description": "Array of all links in the project"
+        }
+      },
+      "required": [
+        "links"
+      ]
+    },
+    "contentItem": {
+      "type": "object",
+      "description": "A content item that references a file by ID and specifies how it's used in the layout",
+      "properties": {
+        "description": {
+          "type": "string",
+          "description": "Human-readable description of this content item"
+        },
+        "fileId": {
+          "type": "string",
+          "description": "References the ID of a file in the files collection"
+        },
+        "side": {
+          "type": "string",
+          "enum": [
+            "front",
+            "back"
+          ],
+          "description": "Side of the design (for two-sided layouts)"
+        },
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          },
+          "minItems": 1,
+          "description": "Page numbers for multipage layouts"
+        }
+      },
+      "required": [
+        "fileId"
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "single-sided",
+            "two-sided",
+            "multipage"
+          ],
+          "description": "Layout type determines how content is organized"
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/contentItem"
+          },
+          "description": "Array of content items that make up the design"
+        }
+      },
+      "required": [
+        "type",
+        "content"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "single-sided"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "content": {
+                "items": {
+                  "not": {
+                    "properties": {
+                      "side": {
+                        "const": "back"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "two-sided"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "content": {
+                "items": {
+                  "required": [
+                    "side"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "type": {
+                "const": "multipage"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "content": {
+                "items": {
+                  "required": [
+                    "pages"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
