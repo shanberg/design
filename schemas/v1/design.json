@@ -9,9 +9,9 @@
       "description": "The version of the design.json schema.",
       "type": "string",
       "enum": [
-        "1.2.0"
+        "1.3.0"
       ],
-      "default": "1.2.0"
+      "default": "1.3.0"
     },
     "designType": {
       "description": "Whether this is a physical or digital design.",
@@ -569,13 +569,36 @@
           ],
           "properties": {
             "pages": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "minimum": 1
-              },
-              "minItems": 1,
-              "description": "Page numbers for multipage layouts"
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1,
+                  "description": "Page numbers for multipage layouts"
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1,
+                        "description": "Individual page number"
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\d+-\\d+$",
+                        "description": "Page range in format 'start-end' (e.g., '1-5', '3-7')"
+                      }
+                    ]
+                  },
+                  "minItems": 1,
+                  "description": "Page numbers and ranges for multipage layouts. Ranges use format 'start-end' where start and end are inclusive."
+                }
+              ]
             }
           }
         }
