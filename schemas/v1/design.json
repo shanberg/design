@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/schemas/design.json",
+  "$id": "https://raw.githubusercontent.com/shanberg/design/main/schemas/v1/design.json",
   "title": "Design Definition",
   "description": "A schema for defining designs.",
   "type": "object",
@@ -250,7 +250,6 @@
         "files"
       ]
     },
-
     "linkReference": {
       "type": "object",
       "description": "A link with metadata and unique ID",
