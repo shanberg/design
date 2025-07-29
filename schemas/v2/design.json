@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://raw.githubusercontent.com/shanberg/design/main/schemas/v1/design.json",
+  "$id": "https://raw.githubusercontent.com/shanberg/design/main/schemas/v2/design.json",
   "title": "Design Definition",
   "description": "A schema for defining designs.",
   "type": "object",
@@ -9,9 +9,9 @@
       "description": "The version of the design.json schema.",
       "type": "string",
       "enum": [
-        "1.4.0"
+        "2.0.0"
       ],
-      "default": "1.4.0"
+      "default": "2.0.0"
     },
     "designType": {
       "description": "Whether this is a physical or digital design.",
@@ -24,11 +24,11 @@
       "$ref": "#/$defs/specifications"
     },
     "files": {
-      "description": "All files organized by category with unique IDs",
+      "description": "A dictionary of all file items, where each key is a unique file ID.",
       "$ref": "#/$defs/filesCollection"
     },
     "links": {
-      "description": "External links related to the design project",
+      "description": "External links related to the design project.",
       "$ref": "#/$defs/linksCollection"
     },
     "layout": {
@@ -115,19 +115,7 @@
         "booklet",
         "handout",
         "poster"
-      ],
-      "description": "Subtypes for physical design categories",
-      "enumDescriptions": {
-        "postcard": "Standard postcard format for mail distribution",
-        "business-card": "Personal contact information card",
-        "banner": "Flexible material for hanging displays and trade shows",
-        "sign": "Rigid material for permanent mounting and identification",
-        "conference-booth": "Large format graphics for trade show displays",
-        "packaging": "Product packaging and container graphics",
-        "booklet": "Multi-page bound document with covers",
-        "handout": "Informational single or multi-page document for distribution",
-        "poster": "Large format display for walls or public spaces"
-      }
+      ]
     },
     "digitalSubtypeEnum": {
       "type": "string",
@@ -139,17 +127,7 @@
         "video",
         "social-media",
         "email"
-      ],
-      "description": "Subtypes for digital design categories",
-      "enumDescriptions": {
-        "presentation": "Slide-based content for presentations and decks",
-        "ad": "Digital advertising graphics and banners",
-        "website": "Web page layouts and interface designs",
-        "ebook": "Digital book or publication format",
-        "video": "Motion graphics and video content",
-        "social-media": "Graphics optimized for social media platforms",
-        "email": "Email newsletter and campaign designs"
-      }
+      ]
     },
     "finishEnum": {
       "type": "string",
@@ -157,8 +135,7 @@
         "gloss",
         "semi-gloss",
         "matte"
-      ],
-      "description": "Surface finish options for physical designs"
+      ]
     },
     "designInfo": {
       "type": "object",
@@ -179,12 +156,12 @@
         "dateCreated": {
           "type": "string",
           "format": "date-time",
-          "description": "ISO 8601 datetime with timezone (e.g., 2024-01-15T10:30:00Z)"
+          "description": "ISO 8601 datetime with timezone"
         },
         "dateModified": {
           "type": "string",
           "format": "date-time",
-          "description": "ISO 8601 datetime with timezone (e.g., 2024-01-15T10:30:00Z)"
+          "description": "ISO 8601 datetime with timezone"
         }
       },
       "required": [
@@ -194,7 +171,6 @@
     },
     "specifications": {
       "type": "object",
-      "description": "Defines the specifications of the design, either physical dimensions or digital properties.",
       "oneOf": [
         {
           "$ref": "#/$defs/physicalSpecifications"
@@ -206,36 +182,30 @@
     },
     "physicalSpecifications": {
       "type": "object",
-      "description": "Physical design specifications for print or tangible items.",
       "properties": {
         "width": {
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Width in specified units"
+          "exclusiveMinimum": 0
         },
         "height": {
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Height in specified units"
+          "exclusiveMinimum": 0
         },
         "units": {
           "$ref": "#/$defs/unitsEnum"
         },
         "subtype": {
-          "$ref": "#/$defs/physicalSubtypeEnum",
-          "description": "Category of physical design"
+          "$ref": "#/$defs/physicalSubtypeEnum"
         },
         "thickness": {
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Thickness in specified units"
+          "exclusiveMinimum": 0
         },
         "finish": {
           "$ref": "#/$defs/finishEnum"
         },
         "bleed": {
           "type": "number",
-          "description": "Bleed value for all sides in the same units as the design",
           "default": 0
         }
       },
@@ -247,26 +217,21 @@
     },
     "digitalSpecifications": {
       "type": "object",
-      "description": "Digital design specifications for screen-based content.",
       "properties": {
         "width": {
           "type": "integer",
-          "exclusiveMinimum": 0,
-          "description": "Width in pixels"
+          "exclusiveMinimum": 0
         },
         "height": {
           "type": "integer",
-          "exclusiveMinimum": 0,
-          "description": "Height in pixels"
+          "exclusiveMinimum": 0
         },
         "subtype": {
-          "$ref": "#/$defs/digitalSubtypeEnum",
-          "description": "Category of digital design"
+          "$ref": "#/$defs/digitalSubtypeEnum"
         },
         "resolution": {
           "type": "number",
-          "exclusiveMinimum": 0,
-          "description": "Resolution in DPI (dots per inch)"
+          "exclusiveMinimum": 0
         }
       },
       "required": [
@@ -274,24 +239,20 @@
         "height"
       ]
     },
-    "fileReference": {
+    "singleFileItem": {
       "type": "object",
-      "description": "A file with metadata and unique ID",
       "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9_-]+$",
-          "description": "Unique identifier for this file, used in layout references"
+        "type": {
+          "const": "single",
+          "description": "Discriminator for a single file."
         },
         "path": {
           "type": "string",
           "pattern": "^(?!.*\\.\\.).*$",
-          "description": "Relative path to file, no parent directory traversal allowed",
           "minLength": 1
         },
         "description": {
-          "type": "string",
-          "description": "Human-readable description of the file's purpose"
+          "type": "string"
         },
         "fileType": {
           "$ref": "#/$defs/fileTypeEnum"
@@ -304,7 +265,7 @@
         }
       },
       "required": [
-        "id",
+        "type",
         "path",
         "category"
       ],
@@ -328,30 +289,25 @@
         }
       }
     },
-    "fileRangeReference": {
+    "fileRangeItem": {
       "type": "object",
-      "description": "A range of sequential files with a common naming pattern",
       "properties": {
-        "id": {
-          "type": "string",
-          "pattern": "^[a-zA-Z0-9_-]+$",
-          "description": "Unique identifier for this file range, used in layout references"
+        "type": {
+          "const": "range",
+          "description": "Discriminator for a file range."
         },
         "basePath": {
           "type": "string",
           "pattern": "^(?!.*\\.\\.).*$",
-          "description": "Base path with {sequence} placeholder for sequence number",
           "minLength": 1
         },
         "startNumber": {
           "type": "integer",
-          "minimum": 1,
-          "description": "Starting sequence number (inclusive)"
+          "minimum": 1
         },
         "endNumber": {
           "type": "integer",
-          "minimum": 1,
-          "description": "Ending sequence number (inclusive)"
+          "minimum": 1
         },
         "numberFormat": {
           "type": "string",
@@ -361,17 +317,14 @@
             "001",
             "0001"
           ],
-          "description": "Format for sequence numbers in filenames",
           "default": "01"
         },
         "fileExtension": {
           "type": "string",
-          "description": "File extension (e.g., '.pdf', '.jpg')",
           "pattern": "^\\.[a-zA-Z0-9]+$"
         },
         "description": {
-          "type": "string",
-          "description": "Human-readable description of the file range's purpose"
+          "type": "string"
         },
         "fileType": {
           "$ref": "#/$defs/fileTypeEnum"
@@ -384,7 +337,7 @@
         }
       },
       "required": [
-        "id",
+        "type",
         "basePath",
         "startNumber",
         "endNumber",
@@ -411,82 +364,43 @@
         }
       }
     },
+    "fileItem": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/singleFileItem"
+        },
+        {
+          "$ref": "#/$defs/fileRangeItem"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type"
+      }
+    },
     "filesCollection": {
       "type": "object",
-      "description": "Collection of all files and file ranges with unique IDs",
-      "properties": {
-        "files": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/fileReference"
-          },
-          "description": "Array of individual files in the project"
-        },
-        "fileRanges": {
-          "type": "array",
-          "items": {
-            "$ref": "#/$defs/fileRangeReference"
-          },
-          "description": "Array of file ranges for sequential files"
-        }
-      },
-      "required": [
-        "files"
-      ],
-      "allOf": [
-        {
-          "if": {
-            "properties": {
-              "files": {
-                "type": "array"
-              },
-              "fileRanges": {
-                "type": "array"
-              }
-            }
-          },
-          "then": {
-            "anyOf": [
-              {
-                "properties": {
-                  "files": {
-                    "minItems": 1
-                  }
-                }
-              },
-              {
-                "properties": {
-                  "fileRanges": {
-                    "minItems": 1
-                  }
-                }
-              }
-            ]
-          }
-        }
-      ]
+      "description": "A dictionary of all file items, where each key is a unique file ID.",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/fileItem"
+      }
     },
     "linkReference": {
       "type": "object",
-      "description": "A link with metadata and unique ID",
       "properties": {
         "id": {
           "type": "string",
-          "pattern": "^[a-zA-Z0-9_-]+$",
-          "description": "Unique identifier for this link"
+          "pattern": "^[a-zA-Z0-9_-]+$"
         },
         "url": {
           "type": "string",
-          "format": "uri",
-          "description": "The full URL of the link"
+          "format": "uri"
         },
         "description": {
-          "type": "string",
-          "description": "Human-readable description of the link's purpose"
+          "type": "string"
         },
         "linkType": {
-          "type": "string",
-          "description": "Optional categorization of the link (e.g., 'jira', 'live', 'documentation')"
+          "type": "string"
         }
       },
       "required": [
@@ -496,14 +410,12 @@
     },
     "linksCollection": {
       "type": "object",
-      "description": "Collection of all links with unique IDs",
       "properties": {
         "links": {
           "type": "array",
           "items": {
             "$ref": "#/$defs/linkReference"
-          },
-          "description": "Array of all links in the project"
+          }
         }
       },
       "required": [
@@ -512,32 +424,18 @@
     },
     "contentItem": {
       "type": "object",
-      "description": "A content item that references a file or file range by ID and specifies how it's used in the layout",
+      "description": "A content item that references a file by its key.",
       "properties": {
+        "fileKey": {
+          "type": "string",
+          "description": "References the key of an item in the files collection."
+        },
         "description": {
-          "type": "string",
-          "description": "Human-readable description of this content item"
-        },
-        "fileId": {
-          "type": "string",
-          "description": "References the ID of a file in the files collection"
-        },
-        "fileRangeId": {
-          "type": "string",
-          "description": "References the ID of a file range in the fileRanges collection"
+          "type": "string"
         }
       },
-      "oneOf": [
-        {
-          "required": [
-            "fileId"
-          ]
-        },
-        {
-          "required": [
-            "fileRangeId"
-          ]
-        }
+      "required": [
+        "fileKey"
       ]
     },
     "singleSidedContentItem": {
@@ -571,8 +469,7 @@
               "enum": [
                 "front",
                 "back"
-              ],
-              "description": "Side of the design (for two-sided layouts)"
+              ]
             }
           }
         }
@@ -596,8 +493,7 @@
                     "type": "integer",
                     "minimum": 1
                   },
-                  "minItems": 1,
-                  "description": "Page numbers for multipage layouts"
+                  "minItems": 1
                 },
                 {
                   "type": "array",
@@ -605,18 +501,15 @@
                     "oneOf": [
                       {
                         "type": "integer",
-                        "minimum": 1,
-                        "description": "Individual page number"
+                        "minimum": 1
                       },
                       {
                         "type": "string",
-                        "pattern": "^\\d+-\\d+$",
-                        "description": "Page range in format 'start-end' (e.g., '1-5', '3-7')"
+                        "pattern": "^\\d+-\\d+$"
                       }
                     ]
                   },
-                  "minItems": 1,
-                  "description": "Page numbers and ranges for multipage layouts. Ranges use format 'start-end' where start and end are inclusive."
+                  "minItems": 1
                 }
               ]
             }
@@ -633,13 +526,11 @@
             "single-sided",
             "two-sided",
             "multipage"
-          ],
-          "description": "Layout type determines how content is organized"
+          ]
         },
         "content": {
           "type": "array",
-          "minItems": 1,
-          "description": "Array of content items that make up the design"
+          "minItems": 1
         }
       },
       "required": [
@@ -653,8 +544,6 @@
               "const": "single-sided"
             },
             "content": {
-              "type": "array",
-              "minItems": 1,
               "items": {
                 "$ref": "#/$defs/singleSidedContentItem"
               }
@@ -667,8 +556,6 @@
               "const": "two-sided"
             },
             "content": {
-              "type": "array",
-              "minItems": 1,
               "items": {
                 "$ref": "#/$defs/twoSidedContentItem"
               }
@@ -681,8 +568,6 @@
               "const": "multipage"
             },
             "content": {
-              "type": "array",
-              "minItems": 1,
               "items": {
                 "$ref": "#/$defs/multipageContentItem"
               }
