@@ -9,9 +9,9 @@
       "description": "The version of the design.json schema.",
       "type": "string",
       "enum": [
-        "2.0.0"
+        "2.0.1"
       ],
-      "default": "2.0.0"
+      "default": "2.0.1"
     },
     "designType": {
       "description": "Whether this is a physical or digital design.",
@@ -286,7 +286,7 @@
         },
         "startNumber": {
           "type": "integer",
-          "minimum": 0
+          "minimum": 1
         },
         "endNumber": {
           "type": "integer",
