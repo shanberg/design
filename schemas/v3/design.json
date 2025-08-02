@@ -83,6 +83,288 @@
         "pt"
       ]
     },
+    "physicalSubtypeEnum": {
+      "type": "string",
+      "enum": [
+        "postcard",
+        "business-card",
+        "banner",
+        "sign",
+        "conference-booth",
+        "packaging",
+        "booklet",
+        "handout",
+        "poster",
+        "apparel-graphic"
+      ]
+    },
+    "digitalSubtypeEnum": {
+      "type": "string",
+      "enum": [
+        "presentation",
+        "ad",
+        "website",
+        "ebook",
+        "video",
+        "social-media",
+        "email"
+      ]
+    },
+    "finishEnum": {
+      "type": "string",
+      "enum": [
+        "gloss",
+        "semi-gloss",
+        "matte"
+      ]
+    },
+    "designInfo": {
+      "type": "object",
+      "description": "Administrative metadata for the design.",
+      "properties": {
+        "title": {
+          "type": "string",
+          "description": "Human-readable title of the design"
+        },
+        "projectName": {
+          "type": "string",
+          "description": "Internal project name or identifier"
+        },
+        "version": {
+          "type": "string",
+          "description": "Version identifier for this design iteration"
+        },
+        "dateCreated": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime with timezone"
+        },
+        "dateModified": {
+          "type": "string",
+          "format": "date-time",
+          "description": "ISO 8601 datetime with timezone"
+        }
+      },
+      "required": [
+        "title",
+        "dateCreated"
+      ]
+    },
+    "physicalSpecifications": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "units": {
+          "$ref": "#/$defs/unitsEnum"
+        },
+        "subtype": {
+          "$ref": "#/$defs/physicalSubtypeEnum"
+        },
+        "thickness": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        },
+        "finish": {
+          "$ref": "#/$defs/finishEnum"
+        },
+        "bleed": {
+          "type": "number",
+          "default": 0
+        }
+      },
+      "required": [
+        "width",
+        "height",
+        "units"
+      ]
+    },
+    "digitalSpecifications": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "height": {
+          "type": "integer",
+          "exclusiveMinimum": 0
+        },
+        "subtype": {
+          "$ref": "#/$defs/digitalSubtypeEnum"
+        },
+        "resolution": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": [
+        "width",
+        "height"
+      ]
+    },
+    "singleSpecification": {
+      "properties": {
+        "structure": {
+          "const": "single"
+        }
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/physicalSpecifications"
+        },
+        {
+          "$ref": "#/$defs/digitalSpecifications"
+        }
+      ]
+    },
+    "multiPartSpecification": {
+      "properties": {
+        "structure": {
+          "const": "multi-part"
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "allOf": [
+              {
+                "$ref": "#/$defs/physicalSpecifications"
+              },
+              {
+                "properties": {
+                  "partId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "partId"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "required": [
+        "structure",
+        "parts"
+      ]
+    },
+    "specifications": {
+      "discriminator": {
+        "propertyName": "structure"
+      },
+      "oneOf": [
+        {
+          "$ref": "#/$defs/singleSpecification"
+        },
+        {
+          "$ref": "#/$defs/multiPartSpecification"
+        }
+      ]
+    },
+    "singleFileItem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "single",
+          "description": "Discriminator for a single file."
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^(?!.*\\.\\.).*$",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/fileCategoryEnum"
+        }
+      },
+      "required": [
+        "type",
+        "path",
+        "category"
+      ]
+    },
+    "fileRangeItem": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "const": "range",
+          "description": "Discriminator for a file range."
+        },
+        "basePath": {
+          "type": "string",
+          "pattern": "^(?!.*\\.\\.).*$",
+          "minLength": 1
+        },
+        "startNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "endNumber": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "numberFormat": {
+          "type": "string",
+          "enum": [
+            "1",
+            "01",
+            "001",
+            "0001"
+          ],
+          "default": "01"
+        },
+        "fileExtension": {
+          "type": "string",
+          "pattern": "^\\.[a-zA-Z0-9]+$"
+        },
+        "description": {
+          "type": "string"
+        },
+        "category": {
+          "$ref": "#/$defs/fileCategoryEnum"
+        }
+      },
+      "required": [
+        "type",
+        "basePath",
+        "startNumber",
+        "endNumber",
+        "fileExtension",
+        "category"
+      ]
+    },
+    "fileItem": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/singleFileItem"
+        },
+        {
+          "$ref": "#/$defs/fileRangeItem"
+        }
+      ],
+      "discriminator": {
+        "propertyName": "type"
+      }
+    },
+    "filesCollection": {
+      "type": "object",
+      "description": "A dictionary of all file items, where each key is a unique file ID.",
+      "minProperties": 1,
+      "additionalProperties": {
+        "$ref": "#/$defs/fileItem"
+      }
+    },
     "basePreview": {
       "type": "object",
       "properties": {
@@ -121,11 +403,10 @@
             "role": {
               "type": "string",
               "enum": [
+                "trim-art",
+                "bleed-art",
                 "contextual-render",
-                "trim-box",
-                "detail-shot",
-                "orthographic",
-                "animated-graphic"
+                "model"
               ]
             }
           },
@@ -278,9 +559,7 @@
             "role": {
               "type": "string",
               "enum": [
-                "slide-deck",
-                "page-flip",
-                "animation-frames"
+                "slide-deck"
               ]
             }
           },
@@ -318,63 +597,194 @@
         }
       ]
     },
-    "singleSpecification": {
+    "linkReference": {
+      "type": "object",
       "properties": {
-        "structure": {
-          "const": "single"
+        "id": {
+          "type": "string",
+          "pattern": "^[a-zA-Z0-9_-]+$"
+        },
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "description": {
+          "type": "string"
+        },
+        "linkType": {
+          "type": "string"
         }
       },
-      "oneOf": [
-        {
-          "$ref": "#/$defs/physicalSpecifications"
-        },
-        {
-          "$ref": "#/$defs/digitalSpecifications"
-        }
+      "required": [
+        "id",
+        "url"
       ]
     },
-    "multiPartSpecification": {
+    "linksCollection": {
+      "type": "object",
       "properties": {
-        "structure": {
-          "const": "multi-part"
-        },
-        "parts": {
+        "links": {
           "type": "array",
-          "minItems": 1,
           "items": {
-            "allOf": [
-              {
-                "$ref": "#/$defs/physicalSpecifications"
-              },
-              {
-                "properties": {
-                  "partId": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "partId"
-                ]
-              }
-            ]
+            "$ref": "#/$defs/linkReference"
           }
         }
       },
       "required": [
-        "structure",
-        "parts"
+        "links"
       ]
     },
-    "specifications": {
-      "discriminator": {
-        "propertyName": "structure"
+    "contentItem": {
+      "type": "object",
+      "description": "A content item that references a file by its key.",
+      "properties": {
+        "fileKey": {
+          "type": "string",
+          "description": "References the key of an item in the files collection."
+        },
+        "description": {
+          "type": "string"
+        }
       },
-      "oneOf": [
+      "required": [
+        "fileKey"
+      ]
+    },
+    "singleSidedContentItem": {
+      "allOf": [
         {
-          "$ref": "#/$defs/singleSpecification"
+          "$ref": "#/$defs/contentItem"
         },
         {
-          "$ref": "#/$defs/multiPartSpecification"
+          "not": {
+            "properties": {
+              "side": {
+                "const": "back"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "twoSidedContentItem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentItem"
+        },
+        {
+          "required": [
+            "side"
+          ],
+          "properties": {
+            "side": {
+              "type": "string",
+              "enum": [
+                "front",
+                "back"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "multipageContentItem": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/contentItem"
+        },
+        {
+          "required": [
+            "pages"
+          ],
+          "properties": {
+            "pages": {
+              "oneOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 1
+                  },
+                  "minItems": 1
+                },
+                {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "type": "integer",
+                        "minimum": 1
+                      },
+                      {
+                        "type": "string",
+                        "pattern": "^\\d+-\\d+$"
+                      }
+                    ]
+                  },
+                  "minItems": 1
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": [
+            "single-sided",
+            "two-sided",
+            "multipage"
+          ]
+        },
+        "content": {
+          "type": "array",
+          "minItems": 1
+        }
+      },
+      "required": [
+        "type",
+        "content"
+      ],
+      "oneOf": [
+        {
+          "properties": {
+            "type": {
+              "const": "single-sided"
+            },
+            "content": {
+              "items": {
+                "$ref": "#/$defs/singleSidedContentItem"
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "two-sided"
+            },
+            "content": {
+              "items": {
+                "$ref": "#/$defs/twoSidedContentItem"
+              }
+            }
+          }
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "multipage"
+            },
+            "content": {
+              "items": {
+                "$ref": "#/$defs/multipageContentItem"
+              }
+            }
+          }
         }
       ]
     }
