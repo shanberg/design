@@ -8,7 +8,7 @@
     "schemaVersion": {
       "description": "The version of the design.json schema.",
       "type": "string",
-      "const": "3.0.0"
+      "const": "3.1.0"
     },
     "designType": {
       "description": "Whether this is a physical or digital design.",
@@ -571,6 +571,52 @@
         }
       ]
     },
+    "physicalImagePreview": {
+      "description": "An image-based preview with physical dimensions.",
+      "allOf": [
+        {
+          "$ref": "#/$defs/basePreview"
+        },
+        {
+          "properties": {
+            "type": {
+              "const": "physicalImage"
+            },
+            "fileKey": {
+              "type": "string"
+            },
+            "width": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "The physical width of the preview."
+            },
+            "height": {
+              "type": "number",
+              "exclusiveMinimum": 0,
+              "description": "The physical height of the preview."
+            },
+            "units": {
+              "$ref": "#/$defs/unitsEnum"
+            },
+            "role": {
+              "type": "string",
+              "enum": [
+                "trim-art",
+                "bleed-art",
+                "contextual-render"
+              ]
+            }
+          },
+          "required": [
+            "type",
+            "fileKey",
+            "width",
+            "height",
+            "units"
+          ]
+        }
+      ]
+    },
     "previewItem": {
       "description": "A displayable preview, which can be one of several types.",
       "discriminator": {
@@ -594,6 +640,9 @@
         },
         {
           "$ref": "#/$defs/sequencePreview"
+        },
+        {
+          "$ref": "#/$defs/physicalImagePreview"
         }
       ]
     },
